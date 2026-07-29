@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Fairphone 5 — ST21NFCD NFC on I2C (mainline st-nci).
+ *
+ * Merge under the board's I2C controller that owns TLMM 38/39/41
+ * (on qcm6490 FP5: &i2c9 / a84000).
+ */
+
+&i2c9 {
+	status = "okay";
+
+	nfc@8 {
+		compatible = "st,st21nfcb-i2c";
+		reg = <0x08>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <41 IRQ_TYPE_LEVEL_HIGH>;
+
+		/* Must idle high — chip is silent when held low */
+		reset-gpios = <&tlmm 38 GPIO_ACTIVE_HIGH>;
+
+		ese-present;
+		uicc-present;
+	};
+};

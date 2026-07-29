@@ -1,0 +1,5 @@
+GPL-2.0-only
+
+Device tree fragments and kernel-related material are under GPL-2.0-only
+unless a file states otherwise. Python helpers in scripts/ are CC0-1.0 /
+public domain for convenience (or GPL-2.0-only if you prefer the same).

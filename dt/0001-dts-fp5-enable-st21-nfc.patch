@@ -1,0 +1,32 @@
+From: isyourbrainfoss
+Subject: arm64: dts: qcom: fairphone-fp5: enable ST21NFCD NFC
+
+Wire ST21NFCD on i2c9 @ 0x08 with reset GPIO 38 and IRQ GPIO 41,
+matching the hardware used by the vendor stack. Use mainline
+compatible st,st21nfcb-i2c (st-nci).
+
+Signed-off-by: isyourbrainfoss
+---
+ arch/arm64/boot/dts/qcom/qcm6490-fairphone-fp5.dts | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
+
+--- a/arch/arm64/boot/dts/qcom/qcm6490-fairphone-fp5.dts
++++ b/arch/arm64/boot/dts/qcom/qcm6490-fairphone-fp5.dts
+@@ -1004,8 +1004,20 @@
+ &i2c9 {
+ 	status = "okay";
+ 
+-	/* ST21NFC NFC @ 28 */
+-	/* VL53L3 ToF @ 29 */
++	nfc@8 {
++		compatible = "st,st21nfcb-i2c";
++		reg = <0x08>;
++		interrupt-parent = <&tlmm>;
++		interrupts = <41 IRQ_TYPE_LEVEL_HIGH>;
++		reset-gpios = <&tlmm 38 GPIO_ACTIVE_HIGH>;
++		ese-present;
++		uicc-present;
++	};
++
++	/* VL53L3 ToF @ 29 — not enabled yet */
+ };
