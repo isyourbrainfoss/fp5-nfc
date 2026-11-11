@@ -1,0 +1,71 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kristian Brox <isyourbrainfoss@proton.me>
+Date: Mon, 5 Oct 2026 20:52:02 +0000
+Subject: [PATCH 4/4] arm64: dts: qcom: qcm6490-fairphone-fp5: add ST21NFCD NFC
+
+Enable the ST21NFCD on i2c9 (0x08), IRQ TLMM 41, reset TLMM 38
+active-low. Compatible is st,st21nfcd (raw NCI).
+
+SYS_CLK is LN_BB_CLK2. VPS_IO is L18B (vreg_l18b). ese-present and
+uicc-present follow the public schematic (NFC_SWP1/SWP2: SWP_SE to
+SIM1, SWP_UICC to SIM2). Reader path is tested; SE/HCE is not.
+
+Signed-off-by: Kristian Brox <isyourbrainfoss@proton.me>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+---
+ .../boot/dts/qcom/qcm6490-fairphone-fp5.dts   | 34 ++++++++++++++++++-
+ 1 file changed, 33 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcm6490-fairphone-fp5.dts b/arch/arm64/boot/dts/qcom/qcm6490-fairphone-fp5.dts
+index 2758f1f57..66970e07e 100644
+--- a/arch/arm64/boot/dts/qcom/qcm6490-fairphone-fp5.dts
++++ b/arch/arm64/boot/dts/qcom/qcm6490-fairphone-fp5.dts
+@@ -988,7 +988,23 @@ redriver_ss_in: endpoint {
+ &i2c9 {
+ 	status = "okay";
+ 
+-	/* ST21NFC NFC @ 28 */
++	nfc@8 {
++		compatible = "st,st21nfcd";
++		reg = <0x08>;
++
++		interrupts-extended = <&tlmm 41 IRQ_TYPE_LEVEL_HIGH>;
++		reset-gpios = <&tlmm 38 GPIO_ACTIVE_LOW>;
++
++		pinctrl-0 = <&nfc_default>;
++		pinctrl-names = "default";
++
++		clocks = <&rpmhcc RPMH_LN_BB_CLK2>;
++		vdd-io-supply = <&vreg_l18b>;
++
++		ese-present;
++		uicc-present;
++	};
++
+ 	/* VL53L3 ToF @ 29 */
+ };
+ 
+@@ -1517,6 +1533,22 @@ hall_sensor_default: hall-sensor-default-state {
+ 		drive-strength = <2>;
+ 		bias-pull-up;
+ 	};
++
++	nfc_default: nfc-default-state {
++		reset-pins {
++			pins = "gpio38";
++			function = "gpio";
++			drive-strength = <2>;
++			bias-disable;
++		};
++
++		int-pins {
++			pins = "gpio41";
++			function = "gpio";
++			drive-strength = <2>;
++			bias-disable;
++		};
++	};
+ };
+ 
+ &uart5 {

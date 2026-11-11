@@ -1,25 +1,55 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Fairphone 5 — ST21NFCD NFC on I2C (mainline st-nci).
+ * Fairphone 5: ST21NFCD NFC on I2C (qcm6490, &i2c9 / a84000).
  *
- * Merge under the board's I2C controller that owns TLMM 38/39/41
- * (on qcm6490 FP5: &i2c9 / a84000).
+ * Same node as upstream/st21nfcd-v5/0004 (posted, not merged).
+ *
+ * NEEDS the raw-NCI driver patch (upstream/st21nfcd-v5/0002). Without it,
+ * mainline st-nci has no "st,st21nfcd" match. If you bind with
+ * "st,st21nfcb-i2c" instead, the driver talks NDLC and this chip does not
+ * answer usefully.
+ *
+ * Reset is active-low: GPIO 38 must be HIGH (deasserted) for the chip to
+ * run. With the v5 driver, logical 0 = running.
  */
 
 &i2c9 {
 	status = "okay";
 
 	nfc@8 {
-		compatible = "st,st21nfcb-i2c";
+		compatible = "st,st21nfcd";
 		reg = <0x08>;
 
-		interrupt-parent = <&tlmm>;
-		interrupts = <41 IRQ_TYPE_LEVEL_HIGH>;
+		interrupts-extended = <&tlmm 41 IRQ_TYPE_LEVEL_HIGH>;
+		reset-gpios = <&tlmm 38 GPIO_ACTIVE_LOW>;
 
-		/* Must idle high — chip is silent when held low */
-		reset-gpios = <&tlmm 38 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&nfc_default>;
+		pinctrl-names = "default";
 
+		/* SYS_CLK <- LN_BB_CLK2, VPS_IO <- L18B (public schematic) */
+		clocks = <&rpmhcc RPMH_LN_BB_CLK2>;
+		vdd-io-supply = <&vreg_l18b>;
+
+		/* SWP_SE -> SIM1, SWP_UICC -> SIM2. Reader mode tested; SE/HCE not. */
 		ese-present;
 		uicc-present;
+	};
+};
+
+&tlmm {
+	nfc_default: nfc-default-state {
+		reset-pins {
+			pins = "gpio38";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-disable;
+		};
+
+		int-pins {
+			pins = "gpio41";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-disable;
+		};
 	};
 };
